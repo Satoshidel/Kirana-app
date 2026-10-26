@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>अपनी किराना दुकान - 1-टच डिजिटल गल्ला व उधार खाता</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f0f2f5;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .active-tab {
+      border-bottom: 4px solid #16a34a;
+      color: #16a34a;
+      background-color: #f0fdf4;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-start pb-20">
+
+  <!-- TOP HEADER -->
+  <header class="w-full max-w-md bg-emerald-700 text-white px-4 py-3.5 shadow-md flex justify-between items-center sticky top-0 z-50">
+    <div class="flex items-center space-x-2">
+      <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center font-bold text-lg">
+        <i class="fa-solid fa-store"></i>
+      </div>
+      <div>
+        <h1 class="font-extrabold text-base leading-tight">किराना गल्ला व उधार खाता</h1>
+        <p class="text-[11px] text-emerald-200">बिना टाइप किए, 1-टच हिसाब!</p>
+      </div>
+    </div>
+    <div class="bg-emerald-800 px-3 py-1 rounded-full text-xs font-bold border border-emerald-600 flex items-center space-x-1">
+      <i class="fa-solid fa-volume-high text-amber-300"></i>
+      <span id="voiceStatusText">आवाज़ चालू</span>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="w-full max-w-md p-3 space-y-4">
+
+    <!-- TOTAL SUMMARY BANNER -->
+    <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-4 text-white shadow-lg border border-slate-700">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2.5">
+        <span class="text-xs text-slate-400 font-medium">आज का कुल गल्ला (नकद)</span>
+        <span class="text-xs bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded">लाइव</span>
+      </div>
+      <div class="flex justify-between items-center pt-2">
+        <h2 id="topTotalCash" class="text-3xl font-extrabold text-emerald-400">₹0</h2>
+        <button onclick="resetDailyCash()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg border border-slate-600 transition">
+          <i class="fa-solid fa-rotate-right mr-1"></i> गल्ला खाली करें
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN APP TABS -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      
+      <!-- TAB BUTTONS -->
+      <div class="grid grid-cols-3 bg-slate-50 border-b border-slate-200 text-center font-bold text-xs">
+        <button onclick="switchTab('galla')" id="tabBtn-galla" class="py-3 px-1 active-tab transition flex flex-col items-center space-y-1">
+          <i class="fa-solid fa-vault text-base"></i>
+          <span>1. नकद गल्ला</span>
+        </button>
+        <button onclick="switchTab('udhar')" id="tabBtn-udhar" class="py-3 px-1 text-slate-500 transition flex flex-col items-center space-y-1">
+          <i class="fa-solid fa-book-bookmark text-base"></i>
+          <span>2. छुट्टा उधार</span>
+        </button>
+        <button onclick="switchTab('mandi')" id="tabBtn-mandi" class="py-3 px-1 text-slate-500 transition flex flex-col items-center space-y-1">
+          <i class="fa-solid fa-list-check text-base"></i>
+          <span>3. मंडी पर्ची</span>
+        </button>
+      </div>
+
+      <!-- ================= TAB 1: NAGAD GALLA (GREEN) ================= -->
+      <div id="tabContent-galla" class="p-4 space-y-4">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex justify-between items-center">
+          <div>
+            <p class="text-xs font-semibold text-emerald-800">खुट्टे पैसे या बिक्री जोड़ें:</p>
+            <p class="text-[11px] text-emerald-600">नीचे दिए गए बड़े बटन को छूते ही गल्ले में जुड़ जाएगा!</p>
+          </div>
+          <button onclick="undoLastCash()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold px-3 py-2 rounded-lg border border-amber-300 transition">
+            <i class="fa-solid fa-rotate-left mr-1"></i> गलती सुधारे
+          </button>
+        </div>
+
+        <!-- BIG QUICK CASH BUTTONS -->
+        <div class="grid grid-cols-3 gap-3">
+          <button onclick="addCash(2)" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white py-4 rounded-xl font-extrabold text-xl shadow-md border-b-4 border-emerald-700 transition">+ ₹2</button>
+          <button onclick="addCash(5)" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white py-4 rounded-xl font-extrabold text-xl shadow-md border-b-4 border-emerald-700 transition">+ ₹5</button>
+          <button onclick="addCash(10)" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white py-4 rounded-xl font-extrabold text-xl shadow-md border-b-4 border-emerald-700 transition">+ ₹10</button>
+          <button onclick="addCash(20)" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white py-4 rounded-xl font-extrabold text-xl shadow-md border-b-4 border-emerald-800 transition">+ ₹20</button>
+          <button onclick="addCash(50)" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white py-4 rounded-xl font-extrabold text-xl shadow-md border-b-4 border-emerald-800 transition">+ ₹50</button>
+          <button onclick="addCash(100)" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white py-4 rounded-xl font-extrabold text-xl shadow-md border-b-4 border-emerald-800 transition">+ ₹100</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="addCash(500)" class="bg-slate-800 hover:bg-slate-900 active:scale-95 text-white py-3 rounded-xl font-bold text-sm shadow transition">+ ₹500 नोट</button>
+          <button onclick="openCustomCashModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 py-3 rounded-xl font-bold text-sm shadow transition">लिखकर जोड़ें</button>
+        </div>
+
+        <!-- RECENT CASH LOG -->
+        <div class="pt-2">
+          <p class="text-xs font-bold text-slate-500 mb-2">आज की गल्ला एंट्री:</p>
+          <div id="cashLogList" class="space-y-1.5 max-h-40 overflow-y-auto text-xs">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 2: UDHAR KHATA (RED) ================= -->
+      <div id="tabContent-udhar" class="p-4 space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <p class="text-xs font-bold text-rose-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ग्राहक चुनें और उधार चढ़ाएं:</p>
+          <button onclick="openAddCustomerModal()" class="bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow">
+            <i class="fa-solid fa-user-plus mr-1"></i> नया ग्राहक जोड़ें
+          </button>
+        </div>
+
+        <!-- CUSTOMER LIST SELECTOR -->
+        <div id="customerGrid" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1 bg-rose-50/50 rounded-xl border border-rose-100">
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- SELECTED CUSTOMER ACTION BOX -->
+        <div id="selectedCustomerBox" class="bg-slate-900 text-white rounded-xl p-3.5 space-y-3 hidden">
+          <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+            <div>
+              <p class="text-[10px] text-slate-400">चुना गया ग्राहक:</p>
+              <h3 id="activeCustName" class="font-bold text-sm text-emerald-400">रमेश चाचा</h3>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] text-slate-400">कुल बकाया:</p>
+              <p id="activeCustBalance" class="font-extrabold text-rose-400 text-base">₹0</p>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-300 text-center font-medium">कितना उधार लिखना है?</p>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="addUdharToActive(2)" class="bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-lg font-bold text-sm shadow">+ ₹2</button>
+            <button onclick="addUdharToActive(5)" class="bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-lg font-bold text-sm shadow">+ ₹5</button>
+            <button onclick="addUdharToActive(10)" class="bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-lg font-bold text-sm shadow">+ ₹10</button>
+            <button onclick="addUdharToActive(20)" class="bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-lg font-bold text-sm shadow">+ ₹20</button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="openCustomUdharModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-lg text-xs font-bold border border-slate-600">
+              मर्जी की रकम लिखें
+            </button>
+            <button onclick="settleCustomerBill()" class="bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-xs font-bold shadow">
+              <i class="fa-solid fa-check mr-1"></i> पैसा मिला (चुक्ता)
+            </button>
+          </div>
+
+          <div class="flex justify-between pt-1">
+            <button onclick="sendWhatsAppReminder()" class="text-emerald-400 text-xs font-bold hover:underline">
+              <i class="fa-brands fa-whatsapp text-sm mr-1"></i> WhatsApp तगादा भेजें
+            </button>
+            <button onclick="closeActiveCustomer()" class="text-slate-400 text-xs hover:text-white">
+              बंद करें ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- ALL CUSTOMERS SUMMARY TABLE -->
+        <div class="pt-2">
+          <p class="text-xs font-bold text-slate-500 mb-2">सभी उधारी खाते:</p>
+          <div id="allCustomersList" class="space-y-2 max-h-56 overflow-y-auto">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: MANDI PARCHI (YELLOW) ================= -->
+      <div id="tabContent-mandi" class="p-4 space-y-4 hidden">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex justify-between items-center">
+          <div>
+            <p class="text-xs font-semibold text-amber-900">दुकान का सामान खत्म?</p>
+            <p class="text-[11px] text-amber-700">जो सामान खत्म हो उसे छूकर लाल करें या नीचे अपनी मर्जी से नया सामान जोड़ें!</p>
+          </div>
+          <button onclick="sendMandiWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow flex items-center space-x-1 shrink-0">
+            <i class="fa-brands fa-whatsapp text-base"></i>
+            <span>WhatsApp भेजें</span>
+          </button>
+        </div>
+
+        <!-- ADD CUSTOM ITEM INPUT -->
+        <div class="flex space-x-2">
+          <input id="customMandiInput" type="text" placeholder="अपनी मर्जी का सामान लिखें (जैसे: कुरकुरे, ब्रेड)" class="flex-1 bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-amber-500">
+          <button onclick="addCustomMandiItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow">
+            + जोड़ें
+          </button>
+        </div>
+
+        <!-- ITEMS GRID -->
+        <div id="mandiItemsGrid" class="grid grid-cols-2 gap-2.5 max-h-60 overflow-y-auto p-1">
+          <!-- Populated via JS -->
+        </div>
+
+        <div class="flex space-x-2 pt-1">
+          <button onclick="clearMandiList()" class="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg">
+            पर्ची खाली करें
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- CUSTOM CASH INPUT MODAL -->
+  <div id="customCashModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-xs rounded-2xl p-4 space-y-3 shadow-xl">
+      <h3 class="font-bold text-sm text-slate-800">रकम टाइप करें (नकद)</h3>
+      <input id="customCashInput" type="number" placeholder="जैसे: 150" class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-lg font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="closeCustomCashModal()" class="py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">रद्द करें</button>
+        <button onclick="submitCustomCash()" class="py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">जोड़ें</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD NEW CUSTOMER MODAL -->
+  <div id="addCustomerModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-xs rounded-2xl p-4 space-y-3 shadow-xl">
+      <h3 class="font-bold text-sm text-slate-800">नया ग्राहक जोड़ें</h3>
+      <input id="newCustNameInput" type="text" placeholder="ग्राहक का नाम (जैसे: मंटू बाबू)" class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:border-rose-500">
+      <input id="newCustPhoneInput" type="tel" placeholder="मोबाइल नंबर (WhatsApp के लिए)" class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-rose-500">
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="closeAddCustomerModal()" class="py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">रद्द करें</button>
+        <button onclick="submitNewCustomer()" class="py-2 bg-rose-600 text-white rounded-xl text-xs font-bold">सेव करें</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM UDHAR MODAL -->
+  <div id="customUdharModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-xs rounded-2xl p-4 space-y-3 shadow-xl">
+      <h3 class="font-bold text-sm text-slate-800">उधार की रकम लिखें</h3>
+      <input id="customUdharInput" type="number" placeholder="जैसे: 35" class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-lg font-bold text-slate-800 focus:outline-none focus:border-rose-500">
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="closeCustomUdharModal()" class="py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">रद्द करें</button>
+        <button onclick="submitCustomUdhar()" class="py-2 bg-rose-600 text-white rounded-xl text-xs font-bold">लिखें</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    const STORAGE_KEY = 'KIRANA_APP_DATA_V4';
+
+    let appData = {
+      cashTotal: 0,
+      cashHistory: [],
+      customers: [
+        { id: 'c1', name: 'रमेश चाचा', phone: '9800000000', balance: 120 },
+        { id: 'c2', name: 'गुड्डू भैया', phone: '9800000001', balance: 45 },
+        { id: 'c3', name: 'पप्पू किराना', phone: '9800000002', balance: 250 },
+        { id: 'c4', name: 'डॉक्टर साहब', phone: '9800000003', balance: 0 }
+      ],
+      activeCustId: null,
+      mandiItems: [
+        { name: 'चीनी (Sugar)', needed: false },
+        { name: 'सरसों तेल (Mustard Oil)', needed: false },
+        { name: 'चायपत्ती (Tea Powder)', needed: false },
+        { name: 'रिफाइंड तेल', needed: false },
+        { name: 'मैगी नूडल्स', needed: false },
+        { name: 'बिस्किट (पारले-जी)', needed: false },
+        { name: 'नमक (Salt)', needed: false },
+        { name: 'साबुन (Surf/Lifebuoy)', needed: false },
+        { name: 'दाल (अरहर/मसूर)', needed: false },
+        { name: 'आटा (Flour)', needed: false },
+        { name: 'बेसन', needed: false },
+        { name: 'मसाले पैकेट', needed: false }
+      ]
+    };
+
+    function loadAppData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try { appData = JSON.parse(saved); } catch (e) {}
+      }
+      renderAll();
+    }
+
+    function saveAppData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      renderAll();
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'hi-IN';
+        utterance.rate = 1.0;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function switchTab(tab) {
+      ['galla', 'udhar', 'mandi'].forEach(t => {
+        document.getElementById('tabContent-' + t).classList.add('hidden');
+        document.getElementById('tabBtn-' + t).className = 'py-3 px-1 text-slate-500 transition flex flex-col items-center space-y-1';
+      });
+      document.getElementById('tabContent-' + tab).classList.remove('hidden');
+      document.getElementById('tabBtn-' + tab).className = 'py-3 px-1 active-tab transition flex flex-col items-center space-y-1';
+    }
+
+    // ================= CASH LOGIC =================
+    function addCash(amount) {
+      appData.cashTotal += amount;
+      appData.cashHistory.unshift({ amount, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+      saveAppData();
+      speakText(amount + ' रुपये गल्ले में जुड़े');
+    }
+
+    function undoLastCash() {
+      if (appData.cashHistory.length === 0) {
+        alert('हटाने के लिए कोई पुरानी एंट्री नहीं है!');
+        return;
+      }
+      const last = appData.cashHistory.shift();
+      appData.cashTotal -= last.amount;
+      if (appData.cashTotal < 0) appData.cashTotal = 0;
+      saveAppData();
+      speakText('पिछली एंट्री हटा दी गई');
+    }
+
+    function resetDailyCash() {
+      if (confirm('क्या आप आज का गल्ला शून्य (0) करना चाहते हैं?')) {
+        appData.cashTotal = 0;
+        appData.cashHistory = [];
+        saveAppData();
+        speakText('गल्ला खाली कर दिया गया है');
+      }
+    }
+
+    function openCustomCashModal() { document.getElementById('customCashModal').classList.remove('hidden'); }
+    function closeCustomCashModal() { document.getElementById('customCashModal').classList.add('hidden'); document.getElementById('customCashInput').value = ''; }
+    function submitCustomCash() {
+      const val = Number(document.getElementById('customCashInput').value);
+      if (val > 0) {
+        addCash(val);
+        closeCustomCashModal();
+      }
+    }
+
+    // ================= UDHAR LOGIC =================
+    function selectCustomer(id) {
+      appData.activeCustId = id;
+      renderAll();
+    }
+
+    function closeActiveCustomer() {
+      appData.activeCustId = null;
+      renderAll();
+    }
+
+    function addUdharToActive(amount) {
+      const cust = appData.customers.find(c => c.id === appData.activeCustId);
+      if (!cust) return;
+      cust.balance += amount;
+      saveAppData();
+      speakText(cust.name + ' के खाते में ' + amount + ' रुपये उधार लिखे गए');
+    }
+
+    function settleCustomerBill() {
+      const cust = appData.customers.find(c => c.id === appData.activeCustId);
+      if (!cust) return;
+      const oldBal = cust.balance;
+      cust.balance = 0;
+      addCash(oldBal);
+      saveAppData();
+      speakText(cust.name + ' का पूरा हिसाब चुकता हो गया, ' + oldBal + ' रुपये नकद गल्ले में जुड़ गए');
+    }
+
+    function openAddCustomerModal() { document.getElementById('addCustomerModal').classList.remove('hidden'); }
+    function closeAddCustomerModal() { document.getElementById('addCustomerModal').classList.add('hidden'); document.getElementById('newCustNameInput').value = ''; document.getElementById('newCustPhoneInput').value = ''; }
+    function submitNewCustomer() {
+      const name = document.getElementById('newCustNameInput').value.trim();
+      const phone = document.getElementById('newCustPhoneInput').value.trim() || '9800000000';
+      if (!name) { alert('ग्राहक का नाम लिखें!'); return; }
+      appData.customers.push({ id: 'c_' + Date.now(), name, phone, balance: 0 });
+      closeAddCustomerModal();
+      saveAppData();
+      speakText('नया ग्राहक जोड़ा गया');
+    }
+
+    function openCustomUdharModal() { document.getElementById('customUdharModal').classList.remove('hidden'); }
+    function closeCustomUdharModal() { document.getElementById('customUdharModal').classList.add('hidden'); document.getElementById('customUdharInput').value = ''; }
+    function submitCustomUdhar() {
+      const val = Number(document.getElementById('customUdharInput').value);
+      if (val > 0) {
+        addUdharToActive(val);
+        closeCustomUdharModal();
+      }
+    }
+
+    function sendWhatsAppReminder() {
+      const cust = appData.customers.find(c => c.id === appData.activeCustId);
+      if (!cust) return;
+      const msg = `नमस्ते ${cust.name} जी, आपकी दुकान पर कुल ₹${cust.balance} उधार बाकी है। कृपया समय निकालकर चुकाने की कृपा करें। - किराना स्टोर`;
+      window.open(`https://wa.me/91${cust.phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // ================= MANDI PARCHI LOGIC =================
+    function toggleMandiItem(idx) {
+      appData.mandiItems[idx].needed = !appData.mandiItems[idx].needed;
+      saveAppData();
+    }
+
+    function addCustomMandiItem() {
+      const input = document.getElementById('customMandiInput');
+      const itemName = input.value.trim();
+      if (!itemName) {
+        alert('सामान का नाम तो लिखिए!');
+        return;
+      }
+      appData.mandiItems.unshift({ name: itemName, needed: true });
+      input.value = '';
+      saveAppData();
+    }
+
+    function clearMandiList() {
+      appData.mandiItems.forEach(i => i.needed = false);
+      saveAppData();
+    }
+
+    function sendMandiWhatsApp() {
+      const neededList = appData.mandiItems.filter(i => i.needed);
+      if (neededList.length === 0) {
+        alert('पर्ची में कम से कम एक सामान तो चुनें या जोड़ें जो लाना हो!');
+        return;
+      }
+      let text = '🛒 *मंडी से लाने वाला सामान (पर्ची):*\n\n';
+      neededList.forEach((item, idx) => {
+        text += `${idx + 1}. ${item.name}\n`;
+      });
+      text += '\nकृपया यह सामान भिजवा दें।';
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    // ================= RENDER UI =================
+    function renderAll() {
+      document.getElementById('topTotalCash').textContent = '₹' + appData.cashTotal.toLocaleString('en-IN');
+
+      const cashLogContainer = document.getElementById('cashLogList');
+      cashLogContainer.innerHTML = appData.cashHistory.length === 0 
+        ? '<p class="text-slate-400 text-center py-2">आज अभी तक कोई नकद एंट्री नहीं हुई।</p>'
+        : appData.cashHistory.map(h => `
+          <div class="flex justify-between items-center bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100">
+            <span class="font-semibold text-slate-700">नकद बिक्री</span>
+            <div class="space-x-2">
+              <span class="font-bold text-emerald-600">+₹${h.amount}</span>
+              <span class="text-[10px] text-slate-400">${h.time}</span>
+            </div>
+          </div>
+        `).join('');
+
+      const custGrid = document.getElementById('customerGrid');
+      custGrid.innerHTML = appData.customers.map(c => `
+        <button onclick="selectCustomer('${c.id}')" class="p-2.5 rounded-xl border text-left transition ${appData.activeCustId === c.id ? 'bg-rose-600 text-white border-rose-700 shadow' : 'bg-white text-slate-800 border-rose-200 hover:bg-rose-50'}">
+          <p class="font-bold text-xs truncate">${c.name}</p>
+          <p class="text-[11px] ${appData.activeCustId === c.id ? 'text-rose-100' : 'text-rose-600'} font-semibold">बाकी: ₹${c.balance}</p>
+        </button>
+      `).join('');
+
+      const activeBox = document.getElementById('selectedCustomerBox');
+      if (appData.activeCustId) {
+        const c = appData.customers.find(x => x.id === appData.activeCustId);
+        if (c) {
+          activeBox.classList.remove('hidden');
+          document.getElementById('activeCustName').textContent = c.name;
+          document.getElementById('activeCustBalance').textContent = '₹' + c.balance;
+        } else {
+          activeBox.classList.add('hidden');
+        }
+      } else {
+        activeBox.classList.add('hidden');
+      }
+
+      const allCustList = document.getElementById('allCustomersList');
+      allCustList.innerHTML = appData.customers.map(c => `
+        <div onclick="selectCustomer('${c.id}')" class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm cursor-pointer hover:border-rose-300">
+          <div>
+            <h4 class="font-bold text-xs text-slate-800 ${c.balance > 0 ? 'text-rose-700' : ''}">${c.name}</h4>
+            <p class="text-[10px] text-slate-400">फोन: ${c.phone}</p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-extrabold ${c.balance > 0 ? 'text-rose-600 bg-rose-50 px-2 py-1 rounded' : 'text-slate-400'}">₹${c.balance} बकाया</span>
+          </div>
+        </div>
+      `).join('');
+
+      const mandiGrid = document.getElementById('mandiItemsGrid');
+      mandiGrid.innerHTML = appData.mandiItems.map((item, idx) => `
+        <button onclick="toggleMandiItem(${idx})" class="p-3 rounded-xl border text-left transition flex justify-between items-center ${item.needed ? 'bg-rose-600 text-white border-rose-700 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:bg-amber-50'}">
+          <span class="font-bold text-xs truncate mr-1">${item.name}</span>
+          <span class="text-[11px] shrink-0">${item.needed ? '🛒 लाना है' : '✓ ठीक है'}</span>
+        </button>
+      `).join('');
+    }
+
+    loadAppData();
+  </script>
+</body>
+</html>
